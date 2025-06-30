@@ -46,6 +46,11 @@ def scrape_remitly_real():
     r.raise_for_status()
     data = r.json()
 
+    # 🔍 Tambahkan log untuk debugging
+    print("🔍 Response keys:", data.keys())
+    print("📦 Full JSON response:")
+    print(json.dumps(data, indent=2))
+
     result = {
         "timestamp": datetime.utcnow().isoformat(),
         "from_currency": "USD",
@@ -63,9 +68,14 @@ if __name__ == "__main__":
     try:
         result = scrape_remitly_real()
         save_to_csv(result)
+
         send_telegram(
-            f"✅ Remitly Scraper Success!\n💱 Rate: {result['exchange_rate']}\n📤 Fee: ${result['fee']}\n📥 Received: ₹{result['delivery_amount']}"
+            f"✅ Remitly Scraper Success!\n"
+            f"💱 Rate: {result.get('exchange_rate')}\n"
+            f"📤 Fee: ${result.get('fee')}\n"
+            f"📥 Received: ₹{result.get('delivery_amount')}"
         )
+
         print("Scraping success!")
 
     except Exception as e:
