@@ -1,34 +1,41 @@
-name: Remitly Scraper
+name: Remitly Multi-Country Scraper
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # jalan tiap jam
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"  # Run setiap jam 6 pagi UTC
 
 jobs:
-  run-scraper:
+  run-multi-scraper:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        from_country: [GBR, USA, DEU]  # Tambah kode negara lain di sini
+
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
 
-      - name: Run Remitly Scraper
-        run: python remitly_scraper.py
+      - name: Setup Remitly Auth State
+        run: |
+          mkdir -p .auth
+          echo '${{ secrets.REMITLY_AUTH_JSON }}' > .auth/remitly.json
+
+      - name: Run Scraper for ${{ matrix.from_country }}
+        run: |
+          python remitly_scraper.py ${{ matrix.from_country }}
+
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
-
-      - name: Upload output.csv
-        uses: actions/upload-artifact@v4
-        with:
-          name: remitly-output
-          path: output.csv
