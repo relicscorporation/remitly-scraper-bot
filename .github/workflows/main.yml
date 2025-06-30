@@ -2,32 +2,33 @@ name: Remitly Scraper
 
 on:
   schedule:
-    - cron: '0 * * * *'  # tiap jam
+    - cron: '0 * * * *'  # jalan tiap jam
   workflow_dispatch:
 
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-          
-      - name: Upload CSV output
-        uses: actions/upload-artifact@v4
-        with:
-          name: remitly-output
-          path: output.csv
-          
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run scraper
+      - name: Run Remitly Scraper
         run: python remitly_scraper.py
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+
+      - name: Upload output.csv
+        uses: actions/upload-artifact@v4
+        with:
+          name: remitly-output
+          path: output.csv
